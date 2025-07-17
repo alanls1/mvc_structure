@@ -31,7 +31,7 @@ export async function login(
   const accessToken = jwt.sign(
     { email: user.email, id: user.id }, // payload
     process.env.JWT_SECRET!, // chave secreta
-    { expiresIn: "15m" } // tempo de expiração
+    { expiresIn: "15m" }
   );
 
   const refreshToken = jwt.sign(
@@ -65,4 +65,54 @@ export async function login(
       name: user.name,
     },
   };
+}
+
+export async function refreshToken(token: string) {
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as {
+      id: number;
+    };
+  } catch (err) {
+    throw new Error("Refresh token inválido ou expirado");
+  }
+
+  const allTokens = await user_refresh_tokens.findAll({
+    where: { id_user: decoded.id },
+  });
+
+  const tokenFound = allTokens.find(
+    async (t) => await bcrypt.compare(token, t.refresh_token as string)
+  );
+
+  if (!tokenFound) {
+    throw new Error("Refresh token inválido");
+  }
+
+  if (tokenFound?.expires_at && tokenFound?.expires_at < new Date()) {
+    throw new Error("Refresh token expirado");
+  }
+
+  const user = await User.findOne({ where: { id: decoded.id } });
+
+  const newAccessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET!, {
+    expiresIn: "15m",
+  });
+
+  const newRefreshToken = jwt.sign(
+    { id: decoded.id },
+    process.env.JWT_REFRESH_SECRET!,
+    { expiresIn: "7d" }
+  );
+
+  const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 16);
+  const expires_at = new Date();
+  expires_at.setDate(expires_at.getDate() + 7);
+
+  await tokenFound.update({
+    refresh_token: hashedRefreshToken,
+    expires_at,
+  });
+
+  return { accessToken: newAccessToken, refreshToken: newRefreshToken };
 }
