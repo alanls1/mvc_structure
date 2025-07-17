@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import { connection } from "./config/dataBase";
+import { errorMiddleware } from "./src/middleware/error.middleware";
 import products from "./src/products/product.routes";
 import user from "./src/users/user.routes";
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use("/products", products);
 app.use("/users", user);
 
+app.use(errorMiddleware);
 app.get("/", (req, res) => {
   res.send("API está rodando!");
 });

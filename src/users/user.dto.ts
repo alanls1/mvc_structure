@@ -14,3 +14,16 @@ export class CreateUserDTO {
   @IsString()
   phone?: string;
 }
+
+export class loadUserDTO {
+  name!: string;
+  email!: string;
+  phone!: string;
+}
+
+export class loginDTO {
+  @IsEmail()
+  email!: string;
+  @MinLength(1)
+  password!: string;
+}
