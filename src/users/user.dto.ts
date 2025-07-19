@@ -13,6 +13,9 @@ export class CreateUserDTO {
 
   @IsString()
   phone?: string;
+
+  @IsString()
+  role?: "admin" | "customer" | "seller" | undefined;
 }
 
 export class loadUserDTO {
