@@ -5,20 +5,20 @@ import { CreateUserDTO, loginDTO } from "./user.dto";
 import { validate } from "class-validator";
 
 export async function createUser(req: Request, res: Response) {
-  // const dto = plainToInstance(CreateUserDTO, req.body);
-  // const errors = await validate(dto);
+  const dto = plainToInstance(CreateUserDTO, req.body);
+  const errors = await validate(dto);
 
-  // //Se tiver erros retorna
-  // if (errors.length > 0) {
-  //   return res.status(400).json({
-  //     message: "Dados inválidos",
-  //     erros: errors.map((err) => err.constraints),
-  //   });
-  //}
+  //Se tiver erros retorna
+  if (errors.length > 0) {
+    return res.status(400).json({
+      message: "Dados inválidos",
+      erros: errors.map((err) => err.constraints),
+    });
+  }
 
   //Se tudo estiver ok, passa o dto para o service
-  //const user = await service.create();
-  res.json("Cheguei");
+  const user = await service.create(dto);
+  res.status(201).json(user);
 }
 
 export async function login(req: Request, res: Response, next: NextFunction) {

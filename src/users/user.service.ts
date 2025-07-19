@@ -1,12 +1,36 @@
-import { loginDTO } from "./user.dto";
+import { CreateUserDTO, loginDTO } from "./user.dto";
 import User from "./user.model";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import { user_refresh_tokens } from "../model/user_refresh_token.model";
 
-export function create() {
-  return User.create({});
+export async function create(data: CreateUserDTO) {
+  const { name, email, password, role = "customer", phone } = data;
+
+  const userExists = await User.findOne({ where: { email } });
+
+  if (userExists) {
+    throw new Error("Usuário já cadastrado");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const newUser = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    phone,
+    role,
+  });
+
+  return {
+    id: newUser.id,
+    name: newUser.name,
+    email: newUser.email,
+    phone: newUser.phone,
+    role: newUser.role,
+  };
 }
 
 export async function login(
@@ -15,7 +39,7 @@ export async function login(
 ) {
   const user = await User.findOne({
     where: { email },
-    attributes: ["id", "email", "password"],
+    attributes: ["id", "email", "password", "role"],
   });
 
   if (!user) {
@@ -28,16 +52,10 @@ export async function login(
     throw new Error("Email/Senha incorreto");
   }
 
-  const accessToken = jwt.sign(
-    { email: user.email, id: user.id }, // payload
-    process.env.JWT_SECRET!, // chave secreta
-    { expiresIn: "15m" }
-  );
-
-  const refreshToken = jwt.sign(
-    { id: user.id },
-    process.env.REFRESH_TOKEN_SECURE!,
-    { expiresIn: "7d" }
+  const { accessToken, refreshToken } = createTokens(
+    user.email,
+    user.id,
+    user.role
   );
 
   const hashRefreshToken = await bcrypt.hash(refreshToken, 16);
@@ -70,7 +88,7 @@ export async function login(
 export async function refreshToken(token: string) {
   let decoded;
   try {
-    decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as {
+    decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECURE!) as {
       id: number;
     };
   } catch (err) {
@@ -93,19 +111,17 @@ export async function refreshToken(token: string) {
     throw new Error("Refresh token expirado");
   }
 
-  const user = await User.findOne({ where: { id: decoded.id } });
-
-  const newAccessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET!, {
-    expiresIn: "15m",
+  const user = await User.findOne({
+    where: { id: tokenFound.id_user },
   });
 
-  const newRefreshToken = jwt.sign(
-    { id: decoded.id },
-    process.env.JWT_REFRESH_SECRET!,
-    { expiresIn: "7d" }
+  const { accessToken, refreshToken } = createTokens(
+    user?.email,
+    user?.id,
+    user?.role
   );
 
-  const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 16);
+  const hashedRefreshToken = await bcrypt.hash(refreshToken, 16);
   const expires_at = new Date();
   expires_at.setDate(expires_at.getDate() + 7);
 
@@ -114,5 +130,17 @@ export async function refreshToken(token: string) {
     expires_at,
   });
 
-  return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+  return { accessToken, refreshToken };
+}
+
+function createTokens(email?: string, id?: number, role?: string) {
+  const accessToken = jwt.sign({ email, id, role }, process.env.JWT_SECRET!, {
+    expiresIn: "15m",
+  });
+
+  const refreshToken = jwt.sign({ id }, process.env.REFRESH_TOKEN_SECURE!, {
+    expiresIn: "7d",
+  });
+
+  return { accessToken, refreshToken };
 }
