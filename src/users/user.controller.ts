@@ -21,15 +21,16 @@ export async function createUser(req: Request, res: Response) {
   res.status(201).json(user);
 }
 
-export async function login(req: Request, res: Response, next: NextFunction) {
+export async function login(req: Request, res: Response) {
   const dto = plainToInstance(loginDTO, req.body);
   const errors = await validate(dto);
 
   //Se tiver erros retorna
   if (errors.length > 0) {
-    const validationError = new Error("Dados inválidos");
-    (validationError as any).status = 400;
-    return next(validationError);
+    return res.status(400).json({
+      message: "Dados inválidos",
+      erros: errors.map((err) => err.constraints),
+    });
   }
   const ip_address =
     req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
@@ -40,7 +41,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     ip_address: ip_address as string,
     user_agent,
   });
-  res.json(token);
+  res.status(200).json(token);
 }
 
 export async function refreshToken(

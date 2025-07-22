@@ -11,7 +11,7 @@ export async function create(data: CreateUserDTO) {
   const userExists = await User.findOne({ where: { email } });
 
   if (userExists) {
-    throw new Error("Usuário já cadastrado");
+    throw new Error("Email já cadastrado");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -72,7 +72,7 @@ export async function login(
   });
 
   user.lastLogin = new Date();
-  user.save();
+  await user.save();
 
   return {
     accessToken,
@@ -133,7 +133,7 @@ export async function refreshToken(token: string) {
   return { accessToken, refreshToken };
 }
 
-function createTokens(email?: string, id?: number, role?: string) {
+export function createTokens(email?: string, id?: number, role?: string) {
   const accessToken = jwt.sign({ email, id, role }, process.env.JWT_SECRET!, {
     expiresIn: "15m",
   });
