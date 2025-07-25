@@ -99,9 +99,15 @@ export async function refreshToken(token: string) {
     where: { id_user: decoded.id },
   });
 
-  const tokenFound = allTokens.find(
-    async (t) => await bcrypt.compare(token, t.refresh_token as string)
-  );
+  let tokenFound;
+
+  for (const t of allTokens) {
+    const isMatch = await bcrypt.compare(token, t.refresh_token as string);
+    if (isMatch) {
+      tokenFound = t;
+      break;
+    }
+  }
 
   if (!tokenFound) {
     throw new Error("Refresh token inválido");
