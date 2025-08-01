@@ -139,7 +139,7 @@ describe("create", () => {
   });
 });
 
-describe.only("refreshToken", () => {
+describe("refreshToken", () => {
   it("Should return erro 'Refresh token inválido ou expirado'", async () => {
     const fakeToken = "A1B2C3";
 
@@ -210,7 +210,7 @@ describe.only("refreshToken", () => {
     jest.useRealTimers();
   });
 
-  it.only("should generate token with 7 days expiration", async () => {
+  it("should generate token with 7 days expiration", async () => {
     mockDateNow();
 
     (jwt.verify as jest.Mock).mockReturnValue({ id: 1 });
