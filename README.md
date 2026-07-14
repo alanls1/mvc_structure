@@ -69,8 +69,8 @@ users/
 
 ```bash
 # Clone o repositório
-git clone https://github.com/alanls1/mvc_structure.git
-cd mvc_structure
+git clone https://github.com/alanls1/node-jwt-auth-mvc.git
+cd node-jwt-auth-mvc
 
 # Instale as dependências
 npm install
