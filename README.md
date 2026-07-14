@@ -1,5 +1,11 @@
 # Node MVC JWT Auth 🔐
 
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white)
+![Jest](https://img.shields.io/badge/Tested_with-Jest-C21325?logo=jest&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-informational)
+
 Projeto backend com Node.js estruturado em arquitetura MVC, com sistema de autenticação utilizando JWT (Access e Refresh Token) e testes automatizados com Jest.
 
 ## 🚀 Sobre o Projeto
@@ -13,6 +19,12 @@ Atualmente, o sistema permite:
 - Geração de Access Token e Refresh Token
 - Validação e renovação do Refresh Token
 - Testes com Jest para os fluxos de autenticação
+
+## 🎯 Escopo
+
+O módulo **`users`** é o foco do estudo: autenticação completa (login, criação de conta, refresh token) com cobertura de testes unitários, incluindo casos de erro e expiração de token.
+
+Os módulos `products`, `categories` e `tags` estão no repositório como estrutura MVC de referência (model/controller/routes/service), mas ainda **não têm CRUD completo** — hoje só expõem listagem. Ficam aqui como scaffold da mesma arquitetura, não como funcionalidades prontas.
 
 ---
 
@@ -57,15 +69,20 @@ users/
 
 ```bash
 # Clone o repositório
-git clone https://github.com/seu-usuario/node-mvc-jwt-auth.git
-cd node-mvc-jwt-auth
+git clone https://github.com/alanls1/mvc_structure.git
+cd mvc_structure
 
 # Instale as dependências
 npm install
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+# preencha DATABASE, DATABASE_USERNAME, PASSWORD, JWT_SECRET e REFRESH_TOKEN_SECURE
 
 # Inicie o servidor em modo dev
 npm run dev
 
 # Executar todos os testes
 npm run test
+```
 

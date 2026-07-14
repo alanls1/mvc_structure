@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "dev": "ts-node-dev --respawn app.ts"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Alan Lima",
+  "license": "MIT",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
